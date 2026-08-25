@@ -101,8 +101,12 @@ ipcMain.handle('setup:test', async (_e, url: string) => {
       method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
-    if (res.ok) return { ok: true };
-    return { ok: false, error: `Server responded with status ${res.status}. Is this a PulseMDT server?` };
+    if (!res.ok) return { ok: false, error: `Server responded with status ${res.status}. Is this a PulseMDT server?` };
+    const body = await res.json().catch(() => null);
+    if (!body || body.service !== 'pulsemdt') {
+      return { ok: false, error: 'That address responded, but it does not look like a PulseMDT server. Double-check the URL.' };
+    }
+    return { ok: true };
   } catch (err: any) {
     const msg = err?.message ?? String(err);
     if (msg.includes('ECONNREFUSED'))
