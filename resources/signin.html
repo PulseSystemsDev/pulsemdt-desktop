@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <title>Sign in to PulseMDT</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #14151a;
+      --surface: #1a1c22;
+      --elevated: #20232b;
+      --border: #2d303a;
+      --accent: #2f9bd6;
+      --accent-hover: #2789c0;
+      --success: #5fae6e;
+      --danger: #d9685b;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --dim: #475569;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+    }
+    .titlebar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 36px;
+      -webkit-app-region: drag;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+    .titlebar span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      -webkit-app-region: no-drag;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+      text-align: center;
+    }
+    .header { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #2f9bd6, #1f6f9e);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: white;
+      box-shadow: 0 8px 24px rgba(47,155,214,0.25);
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; letter-spacing: -0.4px; }
+    .subtitle { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .code-block {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .code-block.visible { display: flex; }
+    .code-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code {
+      font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+    }
+    .code-hint { font-size: 12px; color: var(--dim); }
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    button.secondary:hover { background: var(--elevated); }
+    .status-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    .status-row.success-msg { color: var(--success); }
+    .status-row.error-msg { color: var(--danger); }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    .spinner.hidden { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation-duration: 2s; }
+      button:active { transform: none; }
+    }
+    .actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  </style>
+</head>
+<body>
+  <div class="titlebar"><span>Sign in to PulseMDT</span></div>
+  <div class="card">
+    <div class="header">
+      <div class="logo">P</div>
+      <h1>Sign in to PulseMDT</h1>
+      <p class="subtitle" id="subtitle">Requesting a sign-in code from Pulse Accounts...</p>
+    </div>
+
+    <div class="code-block" id="code-block">
+      <div class="code-label">Your code</div>
+      <div class="code" id="code">------</div>
+      <div class="code-hint" id="code-hint">A browser window should have opened automatically. If not, use the button below.</div>
+    </div>
+
+    <div class="status-row" id="status-row">
+      <div class="spinner" id="spinner"></div>
+      <span id="status-text">Starting...</span>
+    </div>
+
+    <div class="actions">
+      <button id="open-btn" style="display:none;">Open sign-in page</button>
+      <button id="retry-btn" class="secondary" style="display:none;">Try again</button>
+      <button id="cancel-btn" class="secondary">Cancel</button>
+    </div>
+  </div>
+  <script>
+    const codeBlock = document.getElementById('code-block');
+    const codeEl = document.getElementById('code');
+    const subtitle = document.getElementById('subtitle');
+    const statusRow = document.getElementById('status-row');
+    const statusText = document.getElementById('status-text');
+    const spinner = document.getElementById('spinner');
+    const openBtn = document.getElementById('open-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    let verificationUriComplete = '';
+
+    window.signinAPI.onCode((data) => {
+      verificationUriComplete = data.verificationUriComplete;
+      codeEl.textContent = data.userCode;
+      codeBlock.classList.add('visible');
+      subtitle.textContent = 'Enter this code on the page that just opened to finish signing in.';
+      openBtn.style.display = 'flex';
+      setStatus('waiting', 'Waiting for you to authorize...');
+    });
+
+    window.signinAPI.onStatus((data) => {
+      if (data.state === 'authorized') {
+        setStatus('waiting', 'Authorized! Starting your session...');
+      } else if (data.state === 'expired') {
+        setStatus('error', 'This code expired before it was used.');
+        showRetry();
+      } else if (data.state === 'denied') {
+        setStatus('error', 'Sign-in was denied.');
+        showRetry();
+      } else if (data.state === 'error') {
+        setStatus('error', data.message || 'Something went wrong signing you in.');
+        showRetry();
+      }
+    });
+
+    function setStatus(kind, text) {
+      statusText.textContent = text;
+      statusRow.className = 'status-row' + (kind === 'error' ? ' error-msg' : '');
+      spinner.classList.toggle('hidden', kind === 'error');
+    }
+
+    function showRetry() {
+      openBtn.style.display = 'none';
+      retryBtn.style.display = 'flex';
+    }
+
+    openBtn.addEventListener('click', () => {
+      if (verificationUriComplete) window.signinAPI.openLink(verificationUriComplete);
+    });
+    retryBtn.addEventListener('click', () => {
+      retryBtn.style.display = 'none';
+      codeBlock.classList.remove('visible');
+      subtitle.textContent = 'Requesting a sign-in code from Pulse Accounts...';
+      setStatus('waiting', 'Starting...');
+      window.signinAPI.retry();
+    });
+    cancelBtn.addEventListener('click', () => {
+      window.signinAPI.cancel();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+appId: dev.pulsesystems.mdt
+productName: PulseMDT
+copyright: "Copyright © 2024 Pulse Systems"
+
+directories:
+  output: release
+  buildResources: assets
+
+files:
+  - dist/**
+  - resources/**
+  - "!**/*.map"
+
+extraResources:
+  - from: resources/
+    to: resources/
+
+publish:
+  provider: github
+  owner: PulseSystemsDev
+  repo: pulsemdt-desktop
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/icon.ico
+  artifactName: "PulseMDT-Setup-${version}.exe"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: PulseMDT
+  deleteAppDataOnUninstall: false
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: assets/icon.icns
+  artifactName: "PulseMDT-${version}.dmg"
+  category: public.app-category.utilities
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  icon: assets/icon.png
+  artifactName: "PulseMDT-${version}.AppImage"
+  category: Utility
+
+compression: maximum
+generateUpdatesFilesForAllChannels: true

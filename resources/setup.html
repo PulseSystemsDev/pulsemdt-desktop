@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <title>PulseMDT Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #14151a;
+      --surface: #1a1c22;
+      --elevated: #20232b;
+      --border: #2d303a;
+      --accent: #2f9bd6;
+      --accent-hover: #2789c0;
+      --success: #5fae6e;
+      --danger: #d9685b;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --dim: #475569;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+    }
+    .titlebar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 36px;
+      -webkit-app-region: drag;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+    .titlebar span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      -webkit-app-region: no-drag;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #2f9bd6, #1f6f9e);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: white;
+      box-shadow: 0 8px 24px rgba(47,155,214,0.25);
+      flex-shrink: 0;
+    }
+    .header-text h1 { font-size: 20px; font-weight: 700; color: #f8fafc; letter-spacing: -0.4px; }
+    .header-text p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    label { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 8px; }
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    }
+    input:focus { border-color: var(--accent); }
+    input.error { border-color: var(--danger); }
+    .hint { font-size: 12px; color: var(--dim); margin-top: 8px; line-height: 1.6; }
+    .hint code { color: #94a3b8; background: var(--elevated); padding: 1px 5px; border-radius: 3px; }
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status {
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+    }
+    .status.visible { display: block; }
+    .status.success { background: rgba(95,174,110,0.12); border: 1px solid rgba(95,174,110,0.3); color: var(--success); }
+    .status.error-msg { background: rgba(217,104,91,0.12); border: 1px solid rgba(217,104,91,0.3); color: var(--danger); }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    .spinner.visible { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation-duration: 2s; }
+      button:active { transform: none; }
+    }
+    .steps { display: flex; gap: 6px; }
+    .step { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+    .step.active { background: var(--accent); }
+    .step.done { background: var(--success); }
+  </style>
+</head>
+<body>
+  <div class="titlebar"><span>PulseMDT Setup</span></div>
+  <div class="card">
+    <div class="steps">
+      <div class="step done" id="s1"></div>
+      <div class="step active" id="s2"></div>
+      <div class="step" id="s3"></div>
+    </div>
+    <div class="header">
+      <div class="logo">P</div>
+      <div class="header-text">
+        <h1>Connect to your server</h1>
+        <p>Enter the address of your PulseMDT server</p>
+      </div>
+    </div>
+    <div>
+      <label for="url">Server URL</label>
+      <input type="text" id="url" value="https://pulsemdt.com" placeholder="https://pulsemdt.com" spellcheck="false" autocomplete="off" />
+      <div class="hint">Most users can leave this as <code>https://pulsemdt.com</code>. Self-hosted? Enter your server's address, including the port if not 80/443, e.g. <code>http://192.168.1.10:3000</code></div>
+    </div>
+    <div id="status" class="status"></div>
+    <button id="btn" onclick="connect()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-label">Connect &amp; Continue</span>
+    </button>
+  </div>
+  <script>
+    const input = document.getElementById('url');
+    const btn = document.getElementById('btn');
+    const spinner = document.getElementById('spinner');
+    const btnLabel = document.getElementById('btn-label');
+    const status = document.getElementById('status');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
+
+    async function connect() {
+      const raw = input.value.trim();
+      if (!raw) { showError('Please enter your server URL.'); input.classList.add('error'); return; }
+      input.classList.remove('error');
+      setLoading(true);
+      showStatus('');
+
+      const result = await window.setupAPI.testConnection(raw);
+      if (result.ok) {
+        showSuccess('Connected! Opening PulseMDT...');
+        document.getElementById('s3').classList.add('active');
+        setTimeout(async () => {
+          await window.setupAPI.save(raw);
+        }, 800);
+      } else {
+        setLoading(false);
+        showError(result.error ?? 'Could not connect. Check the URL and try again.');
+        input.classList.add('error');
+      }
+    }
+
+    function setLoading(v) {
+      btn.disabled = v;
+      spinner.classList.toggle('visible', v);
+      btnLabel.textContent = v ? 'Connecting...' : 'Connect & Continue';
+    }
+
+    function showSuccess(msg) {
+      status.className = 'status visible success';
+      status.textContent = msg;
+    }
+
+    function showError(msg) {
+      status.className = 'status visible error-msg';
+      status.textContent = msg;
+    }
+
+    function showStatus(msg) {
+      if (!msg) { status.className = 'status'; status.textContent = ''; return; }
+      status.textContent = msg;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+release/
+setup/node_modules/
+setup/dist/
+*.log

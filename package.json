@@ -1,0 +1,36 @@
+{
+  "name": "pulsemdt-desktop",
+  "version": "1.0.0",
+  "description": "PulseMDT desktop client with multi-monitor support",
+  "author": "Pulse Systems <support@pulsesystems.dev>",
+  "main": "dist/electron/main.js",
+  "private": true,
+  "scripts": {
+    "start": "node -e \"delete process.env.ELECTRON_RUN_AS_NODE; const {spawnSync}=require('child_process'); spawnSync(require('electron'),['.'],{stdio:'inherit',env:process.env})\"",
+    "dev": "npm run build:ts && npm start",
+    "build:ts": "tsup",
+    "build": "npm run build:ts && electron-builder",
+    "build:dir": "npm run build:ts && electron-builder --dir",
+    "pack": "npm run build:ts && electron-builder --publish never"
+  },
+  "build": {
+    "extends": "./electron-builder.yml"
+  },
+  "dependencies": {
+    "electron-log": "^5.2.0",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "wait-on": "^8.0.0"
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
+  }
+}
