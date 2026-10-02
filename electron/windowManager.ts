@@ -130,11 +130,11 @@ export class WindowManager {
       title: def.title,
       titleBarStyle: 'hidden',
       titleBarOverlay: {
-        color: '#14151a',
+        color: '#0a0b0f',
         symbolColor: '#64748b',
         height: 36,
       },
-      backgroundColor: '#14151a',
+      backgroundColor: '#0a0b0f',
       show: false,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
