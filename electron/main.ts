@@ -181,7 +181,7 @@ function openSetupWindow() {
     resizable: false,
     frame: false,
     titleBarStyle: 'hidden',
-    backgroundColor: '#14151a',
+    backgroundColor: '#0a0b0f',
     show: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload-setup.js'),
